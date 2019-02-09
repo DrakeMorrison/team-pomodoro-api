@@ -5,10 +5,10 @@ namespace teampomodoroapi.Models
 {
     public class Everything
     {
-        public List<Users> Users { get; set; }
-        public List<UsersToProjects> UsersToProjects { get; set; }
-        public List<Projects> Projects { get; set; }
-        public List<Tasks> Tasks { get; set; }
-        public List<Records> Records { get; set; }
+        public IEnumerable<Users> Users { get; set; }
+        public IEnumerable<UsersToProjects> UsersToProjects { get; set; }
+        public IEnumerable<Projects> Projects { get; set; }
+        public IEnumerable<Tasks> Tasks { get; set; }
+        public IEnumerable<Records> Records { get; set; }
     }
 }

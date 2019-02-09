@@ -1,11 +1,7 @@
 ﻿using Dapper;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Threading.Tasks;
+using teampomodoroapi.Models;
 
 namespace teampomodoroapi.DataAccess
 {
@@ -18,9 +14,63 @@ namespace teampomodoroapi.DataAccess
             ConnectionString = config.GetSection("ConnectionString").Value;
         }
 
-        // API Functions here
+        // API Method here
 
-        public Object GetEverything() { }
+        public Everything GetEverything() {
+            using (var db = new SqlConnection(ConnectionString))
+            {
+                db.Open();
+
+                Everything result = new Everything
+                {
+                    Users = db.Query<Users>(@"
+                    SELECT TOP (1000) [Id]
+                          ,[Name]
+                      FROM [dbo].[Users]
+                "),
+
+                    Projects = db.Query<Projects>(@"
+                    SELECT TOP (1000) [Id]
+                    ,[Name]
+                    ,[isArchived]
+                    ,[Description]
+                    FROM [dbo].[Projects]
+                "),
+
+                    UsersToProjects = db.Query<UsersToProjects>(@"
+                    SELECT TOP (1000) [Id]
+                          ,[UserId]
+                          ,[ProjectId]
+                      FROM [dbo].[UsersToProjects]
+                "),
+
+                    Tasks = db.Query<Tasks>(@"
+                    SELECT TOP (1000) [Id]
+                          ,[Name]
+                          ,[EstimatedPomodori]
+                          ,[ActualPomodori]
+                          ,[InternalInterruptions]
+                          ,[ExternalInterruptions]
+                          ,[UserId]
+                          ,[isArchived]
+                          ,[ProjectId]
+                          ,[RecordId]
+                          ,[isAssigned]
+                      FROM [dbo].[Tasks]
+                "),
+
+                    Records = db.Query<Records>(@"
+                    SELECT TOP (1000) [Id]
+                          ,[StartTime]
+                          ,[EndTime]
+                          ,[ProjectId]
+                      FROM [dbo].[Records]
+                ")
+                };
+
+                return result;
+            }
+        }
 
     }
 }
