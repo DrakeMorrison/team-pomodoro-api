@@ -3,8 +3,8 @@ namespace teampomodoroapi.Models
 {
     public class UsersToProjects
     {
-        public UsersToProjects()
-        {
-        }
+        public int Id { get; set; }
+        public int userId { get; set; }
+        public int projectId { get; set; }
     }
 }
