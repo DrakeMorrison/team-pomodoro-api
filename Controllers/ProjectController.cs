@@ -20,25 +20,18 @@ namespace teampomodoroapi.Controllers
         [HttpPost]
         public IActionResult Post(ProjectWithUsers newProject)
         {
-            var result = _storage.CreateProject(newProject);
+            object result = _storage.CreateProject(newProject);
 
-            if (result != null)
-            {
-                return Ok(result);
-            }
-            return BadRequest();
+            return result != null ? Ok(result) : (IActionResult)BadRequest();
         }
 
+        // update project
         [HttpPut]
         public IActionResult Put(Projects newProject)
         {
-            var result = _storage.UpdateProject(newProject);
+            object result = _storage.UpdateProject(newProject);
 
-            if (result != null)
-            {
-                return Ok(result);
-            }
-            return NotFound();
+            return result != null ? Ok(result) : (IActionResult)NotFound();
         }
     }
 }

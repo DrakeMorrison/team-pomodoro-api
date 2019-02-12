@@ -13,5 +13,6 @@ namespace teampomodoroapi.Models
         public bool IsArchived { get; set; }
         public int ProjectId { get; set; }
         public int RecordId { get; set; }
+        public bool IsAssigned { get; set; }
     }
 }
