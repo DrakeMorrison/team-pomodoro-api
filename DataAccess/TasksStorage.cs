@@ -23,24 +23,33 @@ namespace teampomodoroapi.Controllers
                 {
                     db.Open();
 
-                    string startTime =  DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+                    using (var transaction = db.BeginTransaction())
+                    {
+                        string startTime =  DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
 
-                    // create record and selectId
-                    var recordId = db.ExecuteScalar($@"
-                        INSERT INTO [dbo].[Records] ([StartTime], [EndTime], [ProjectId]) 
-                        VALUES (${startTime}, null, ${newTask.ProjectId})
-                        SELECT SCOPE_IDENTITY();
-                    ");
+                        // create record and selectId
+                        int recordId = db.ExecuteScalar<int>(@"
+                            INSERT INTO [dbo].[Records] ([StartTime], [EndTime], [ProjectId]) 
+                            VALUES (@StartTime, null, @ProjectId)
+                            SELECT SCOPE_IDENTITY();
+                            ", new { StartTime = startTime, ProjectId = newTask.ProjectId}, transaction: transaction);
 
-                    // create Task and select ID
-                    var result = db.ExecuteScalar($@"
-                        INSERT INTO [dbo].[Tasks] ([Name], [EstimatedPomodori], [ActualPomodori], [InternalInterruptions], [ExternalInterruptions], [UserId], [isArchived], [ProjectId], [RecordId], [isAssigned]) 
-                        VALUES (@name, @estimatedPomodori, @actualPomodori, @internalInterruptions, @externalInterruptions, @userId, @isArchived, @projectId, ${recordId}, @isAssigned)
-                        SELECT SCOPE_IDENTITY();
-                    ", newTask);
+                        Tasks taskWithRecordId = newTask;
+                        taskWithRecordId.RecordId = recordId;
 
-                    return result;
+                        // create Task and select ID
+                        var result = db.ExecuteScalar(@"
+                            INSERT INTO [dbo].[Tasks] ([Name], [EstimatedPomodori], [ActualPomodori], [InternalInterruptions], [ExternalInterruptions], [UserId], [isArchived], [ProjectId], [RecordId], [isAssigned]) 
+                            VALUES (@name, @estimatedPomodori, @actualPomodori, @internalInterruptions, @externalInterruptions, @userId, @isArchived, @projectId, @recordId, @isAssigned)
+                            SELECT SCOPE_IDENTITY();
+                            ", taskWithRecordId, transaction: transaction);
+
+                        transaction.Commit();
+                        
+                        return result;
+                    }
                 }
+
 
             }
             catch
