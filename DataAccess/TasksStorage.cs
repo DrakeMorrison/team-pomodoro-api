@@ -23,7 +23,7 @@ namespace teampomodoroapi.Controllers
                 {
                     db.Open();
 
-                    DateTime startTime =  DateTime.Now;
+                    string startTime =  DateTime.Now.ToString();
 
                     // create record and selectId
                     var recordId = db.ExecuteScalar($@"
@@ -57,26 +57,32 @@ namespace teampomodoroapi.Controllers
                 {
                     db.Open();
 
-                    DateTime endTime = DateTime.Now;
-
-                    var result = db.Execute($@"
-                        BEGIN TRANSACTION;
-                        UPDATE [dbo].[Tasks]
-                        SET [Name] = @Name, [EstimatedPomodori] = @EstimatedPomodori, [ActualPomodori] = @ActualPomodori, [InternalInterruptions] = @InternalInterruptions, [ExternalInterruptions] = @InternalInterruptions, [UserId] = @UserId, [isArchived] = @IsArchived, [ProjectId] = @ProjectId, [RecordId] = @RecordId, [isAssigned] = @IsAssigned
-                        WHERE [Id] = @Id;
-                        UPDATE [dbo].[Records]
-                        SET [EndTime] = ${endTime}
-                        WHERE [ProjectId] = ${newTask.ProjectId};
-                        COMMIT;
-                    ", newTask);
-
-                    if (result == 1)
+                    using (var transaction = db.BeginTransaction())
                     {
-                        return newTask.Id;
-                    }
+                        string endTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+                        
+                        var result1 = db.Execute(@"
+                            UPDATE [dbo].[Tasks]
+                            SET [Name] = @Name, [EstimatedPomodori] = @EstimatedPomodori, [ActualPomodori] = @ActualPomodori, [InternalInterruptions] = @InternalInterruptions, [ExternalInterruptions] = @InternalInterruptions, [UserId] = @UserId, [isArchived] = @IsArchived, [ProjectId] = @ProjectId, [RecordId] = @RecordId, [isAssigned] = @IsAssigned
+                            WHERE [Id] = @Id;
+                        ", newTask, transaction: transaction);
+                        
+                        var result2 = db.Execute(@"
+                            UPDATE [dbo].[Records]
+                            SET [EndTime] = @EndTime
+                            WHERE [Id] = @RecordId;", new { RecordId = newTask.RecordId, EndTime = endTime}, transaction: transaction);
 
-                    return null;
+                        transaction.Commit();
+                        
+                        if (result1 != 0 && result2 != 0)
+                        {
+                            return newTask.Id;
+                        }
+                        
+                        return null;
+                    }
                 }
+
             }
             catch
             {
