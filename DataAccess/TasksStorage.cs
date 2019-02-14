@@ -23,10 +23,12 @@ namespace teampomodoroapi.Controllers
                 {
                     db.Open();
 
+                    DateTime startTime =  DateTime.Now;
+
                     // create record and selectId
                     var recordId = db.ExecuteScalar($@"
                         INSERT INTO [dbo].[Records] ([StartTime], [EndTime], [ProjectId]) 
-                        VALUES (null, null, ${newTask.ProjectId})
+                        VALUES (${startTime}, null, ${newTask.ProjectId})
                         SELECT SCOPE_IDENTITY();
                     ");
 
@@ -55,10 +57,17 @@ namespace teampomodoroapi.Controllers
                 {
                     db.Open();
 
-                    var result = db.Execute(@"
+                    DateTime endTime = DateTime.Now;
+
+                    var result = db.Execute($@"
+                        BEGIN TRANSACTION;
                         UPDATE [dbo].[Tasks]
                         SET [Name] = @Name, [EstimatedPomodori] = @EstimatedPomodori, [ActualPomodori] = @ActualPomodori, [InternalInterruptions] = @InternalInterruptions, [ExternalInterruptions] = @InternalInterruptions, [UserId] = @UserId, [isArchived] = @IsArchived, [ProjectId] = @ProjectId, [RecordId] = @RecordId, [isAssigned] = @IsAssigned
-                        Where [Id] = @Id;
+                        WHERE [Id] = @Id;
+                        UPDATE [dbo].[Records]
+                        SET [EndTime] = ${endTime}
+                        WHERE [ProjectId] = ${newTask.ProjectId};
+                        COMMIT;
                     ", newTask);
 
                     if (result == 1)
