@@ -23,7 +23,7 @@ namespace teampomodoroapi.Controllers
                 {
                     db.Open();
 
-                    string startTime =  DateTime.Now.ToString();
+                    string startTime =  DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
 
                     // create record and selectId
                     var recordId = db.ExecuteScalar($@"
