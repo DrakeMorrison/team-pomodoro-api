@@ -34,8 +34,6 @@
 3. Type 'npm install' to download required dependencies.
 4. Build and Run the API with Visual Studio
 ```
-### Demo:
-[Preview the API endpoints here](https://team-pomodoro-api.azurewebsites.net/api/app)
 
 
 ### Specs By:
